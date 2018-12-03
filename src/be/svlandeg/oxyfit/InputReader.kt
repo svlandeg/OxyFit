@@ -14,8 +14,8 @@ fun main(args : Array<String>) {
     val nrRows = 20
     var exSample = exTable.sampleN(nrRows);
 
-    // shuffle the 20 selected rows randomly
-    val indexList = (0..nrRows).toList().shuffled().toIntArray()
+    // shuffle the 20 selected rows randomly. use 1-based index because this will be shown to users.
+    val indexList = (1..nrRows).toList().shuffled().toIntArray()
     val exIndex = IntColumn.create("Index", indexList)
     exSample.addColumns(exIndex)
     exSample = exSample.sortOn("Index")
