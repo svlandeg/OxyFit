@@ -4,6 +4,7 @@ import tech.tablesaw.api.Table
 import tech.tablesaw.io.csv.CsvReadOptions
 import java.util.*
 
+
 /**
  * Class that reads a CSV table and performs preprocessing and filtering.
  *
@@ -18,20 +19,10 @@ class InputReader(private val location: String, private val sep: Char)
         return Table.read().csv(builder.build()).dropRowsWithMissingValues()
     }
 
-    /* Filter the rows of the table according to the gear you have available. This assumes a format of "gear1, gear2" per cell in the input */
-    fun filterGear(inputTable: Table, availableGear: Set<String>): Table
-    {
-        val lowerGear = availableGear.map { it.toLowerCase() }
-
-        //println(inputTable.stringColumn("Gear").lowerCase().split(",").map { it.trim() })
-        //val outputTable = inputTable.where(inputTable.stringColumn("Gear").lowerCase().asList().isIn(lowerGear))
-        return inputTable
-    }
-
     /* Obtain the different values for a column, assuming a format of value1, value2 per cell in the input */
     fun getValues(inputTable: Table, columnName: String): TreeSet<String>
     {
-        var values = sortedSetOf<String>()
+        val values = sortedSetOf<String>()
 
         for (row in inputTable)
         {
@@ -40,4 +31,29 @@ class InputReader(private val location: String, private val sep: Char)
         return values
 
     }
+
+    /* Filter the rows of the table according to the required filters. This assumes a format of "gear1, gear2" per cell in the input */
+    fun filterValues(inputTable: Table, filters: Set<ValueFilter>): Table
+    {
+        var outputTable = inputTable.copy()
+        //var rowsToDrop = arrayOf<Int>()
+        val rowsToDrop: MutableList<Int> = ArrayList()
+        for (row in inputTable)
+        {
+            var isOK = true
+            for (filter in filters)
+            {
+                if (isOK)
+                    isOK = isOK && filter.values.containsAll(row.getString(filter.columnName).split(",").map { it.toLowerCase().trim() })
+            }
+            if (! isOK)
+            {
+                rowsToDrop.add(row.rowNumber)
+            }
+        }
+        if (! rowsToDrop.isEmpty())
+            outputTable = outputTable.dropRows(*rowsToDrop.toIntArray())
+        return outputTable
+    }
+
 }
