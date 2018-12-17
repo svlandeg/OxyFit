@@ -43,8 +43,9 @@ class InputReader(private val location: String, private val sep: Char)
             var isOK = true
             for (filter in filters)
             {
+                // only perform the check if everything is OK up until this filter
                 if (isOK)
-                    isOK = isOK && filter.values.containsAll(row.getString(filter.columnName).split(",").map { it.toLowerCase().trim() })
+                    isOK = filter.values.containsAll(row.getString(filter.columnName).split(",").map { it.toLowerCase().trim() })
             }
             if (! isOK)
             {
@@ -52,7 +53,9 @@ class InputReader(private val location: String, private val sep: Char)
             }
         }
         if (! rowsToDrop.isEmpty())
+        {
             outputTable = outputTable.dropRows(*rowsToDrop.toIntArray())
+        }
         return outputTable
     }
 
